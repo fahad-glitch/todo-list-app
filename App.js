@@ -1,30 +1,47 @@
-import {useState} from 'react';
-import { TextInput } from 'react-native';
-import { StyleSheet, Text, View ,Button,Alert} from 'react-native';
-
+import { useState } from 'react';
+import { StyleSheet, View, FlatList ,Button} from 'react-native';
+import GoalItem from './components/GoalItem';
+import GoalInput from './components/GoalInput';
 export default function App() {
 
-  const [enteredGoalText,setEnteredGoalText] = useState('');
-  const [goal,setGoal]=useState([]);
-  function addGoalHandler()
-  {
-    setGoal((currentgoalText)=>[...currentgoalText,enteredGoalText]);
-  }
-  function goalInputHandler(enterText){
-    setEnteredGoalText(enterText);
+  const [modalVisible, setModalVisible]= useState(false)
+  const [goal, setGoal] = useState([]);
+
+  function startAddGoalHandler(){
+    setModalVisible(true);
   }
 
+  function stopAddGoalHandler(){
+    setModalVisible(false);
+  }
+
+  function addGoalHandler(enteredGoalText) {
+    setGoal((currentgoalText) => [...currentgoalText, {text:enteredGoalText, id:Math.random().toString()}]);
+    stopAddGoalHandler();
+  }
+  function deletGoalHandler(id){
+    setGoal((currentGoals)=>{
+      return currentGoals.filter((goal)=> goal.id !==id);
+    });
+  }
 
   return (
     <View style={styles.appContainer}>
-      <View style={styles.inputContainer}>
-        <TextInput style={styles.textInput} placeholder='Your Course Goal' onChangeText={goalInputHandler}/>
-        <Button title='Add Goal' onPress={addGoalHandler}/>
-      </View>
+      {/* Goal Input Header */}
+      <Button title='Add New Goal' color='#001C30' onPress={startAddGoalHandler}/>
+      <GoalInput onAddGoal={addGoalHandler} visible={modalVisible} invisible={stopAddGoalHandler}/>
+      {/* Goal Body */}
       <View style={styles.goalsContainer}>
-       {
-        goal.map((item)=> <Text key={item}>{item}</Text>)
-       }
+        {/* Goal items */}
+        <FlatList data={goal} renderItem={(itemData) => 
+          {
+            return <GoalItem text={itemData.item.text} onDeleteItem={deletGoalHandler} id={itemData.item.id}/>;
+          }
+        }
+        keyExtractor={(item,index)=>{
+          return item.id;
+        }} 
+        alwaysBounceVertical={false} />
       </View>
 
     </View>
@@ -32,28 +49,15 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-    appContainer:{
-      flex:1,
-      paddingTop: 50,
-      paddingHorizontal:16
-    },
-    inputContainer:{
-      flex:1,
-      flexDirection:'row',
-      justifyContent:'space-between',
-      alignItems:'center',
-      marginBottom:24,
-      borderBottomWidth:1,
-      borderBottomColor:'#cccccc'
-    },
-    textInput:{
-      borderWidth:1,
-      borderColor:'#cccccc',
-      width:'70%',
-      marginRight:8,
-      padding:8,
-    },
-    goalsContainer:{
-      flex:6,
-    }
+  appContainer: {
+    flex: 1,
+    paddingTop: 50,
+    paddingHorizontal: 16,
+    backgroundColor:"#FFA41B"
+  },
+  
+  goalsContainer: {
+    flex: 6,
+  },
+  
 }); 
